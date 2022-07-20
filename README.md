@@ -5,8 +5,8 @@ Extend your graphical might with some of the greatest image formats available
 - Load and manipulate vector graphics with extensive support for the **SVG1.1** and much of the **SVG2.0** spec
 - Load and play animated **WEBP** images
 - Load and display images of the **QOI** format
-- Load images from files or strings
-- Supports SVG, WEBP, QOI, PNG & JPEG image formats
+- Load images from disk or memory
+- Supports SVG / SVGZ, WEBP, QOI, PNG & JPEG image formats
 
 ## Usage
 TBD
