@@ -3,7 +3,7 @@
 # Graphics Extensions for Solar2D
 Extend your graphical might with some of the greatest image formats available
 
-## Description
+## Rationale
 Would you like to support high screen resolutions without bloating up your app/game with duplicate images of varying sizes?
 
 Would you like to play short animations on loop like GIFs or animated stickers?
