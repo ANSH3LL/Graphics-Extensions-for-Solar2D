@@ -37,5 +37,5 @@ TBD
 - Current logo by <a href="http://cooltext.com" target="_blank"><img src="https://cooltext.com/images/ct_pixel.gif" width="80" height="15" alt="Cool Text: Logo and Graphics Generator" title = "Cool Text: Logo and Graphics Generator" border="0" /></a>
 
 ## P/s
-- If you love this project and are willing to make a logo to spruce up this readme, I will credit you however you like above
-- If you own a **macOS** device and are comfortable wrangling [Rust](https://www.rust-lang.org/) (to build resvg), I'd appreciate your assistance with building the plugin for **macOS** and **iOS** and will credit you however you like above
+- If you love this project and are willing to make a logo to spruce up this readme, I will credit you however you like (as long as it's reasonable) above
+- If you own a **macOS** device and are comfortable wrangling [Rust](https://www.rust-lang.org/) (to build resvg), I'd appreciate your assistance with building the plugin for **macOS** and **iOS** and will credit you however you like (as long as it's reasonable) above
