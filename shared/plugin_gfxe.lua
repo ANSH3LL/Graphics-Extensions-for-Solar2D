@@ -259,7 +259,7 @@ function lib.newScalableImage(opts, conf)
     rect.trait = texture.trait
     rect.texture = texture
     --
-    self._disposed = false
+    rect._disposed = false
     rect._dispose = rect.removeSelf
     --
     rect.modify = function(self, conf)

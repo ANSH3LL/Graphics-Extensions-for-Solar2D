@@ -406,20 +406,27 @@ static int completed(lua_State* L, void* context) {
 // ----------------------------------------------------------------------------
 
 bool decodeSTBI(Texture* texture, unsigned char* data, int length) {
+    int channels = 0;
     int width = 0, height = 0;
     int bpp = CoronaExternalFormatBPP(texture->format);
 
-    texture->pixels = stbi_load_from_memory(data, length, &width, &height, NULL, bpp);
+    unsigned char* pixels = stbi_load_from_memory(data, length, &width, &height, &channels, bpp);
 
-    if(texture->pixels) {
-        texture->width = width;
-        texture->height = height;
-
-        return true;
-    }
-    else {
+    if(!pixels) {
         return false;
     }
+
+    if(bpp == 4 && channels == 4) {
+        size_t buffer_size = width * height * 4;
+        premultiplyAlpha(pixels, buffer_size);
+    }
+
+    texture->width = width;
+    texture->height = height;
+
+    texture->pixels = pixels;
+
+    return true;
 }
 
 bool decodeQOI(Texture* texture, unsigned char* data, int length) {
@@ -427,6 +434,16 @@ bool decodeQOI(Texture* texture, unsigned char* data, int length) {
     int bpp = CoronaExternalFormatBPP(texture->format);
 
     unsigned char* pixels = (unsigned char*)qoi_decode(data, length, &info, 0);
+
+    if(!pixels) {
+        return false;
+    }
+
+    if(bpp == 4 && info.channels == 4) {
+        size_t buffer_size = info.width * info.height * 4;
+        premultiplyAlpha(pixels, buffer_size);
+    }
+
     texture->pixels = stbi__convert_format(pixels, info.channels, bpp, info.width, info.height);
 
     if(texture->pixels) {
@@ -435,9 +452,8 @@ bool decodeQOI(Texture* texture, unsigned char* data, int length) {
 
         return true;
     }
-    else {
-        return false;
-    }
+
+    return false;
 }
 
 bool decodeWEBP(Texture* texture, const uint8_t* data, size_t length) {
@@ -484,9 +500,8 @@ bool decodeWEBP(Texture* texture, const uint8_t* data, size_t length) {
 
         return true;
     }
-    else {
-        return false;
-    }
+
+    return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -583,13 +598,13 @@ static int newStaticTexture(lua_State* L) {
     texture->trait = STATIC;
     texture->format = strToFmt(format);
 
-    if(decodeSTBI(texture, (unsigned char*)data, (int)length)) {
-        return newTexture(L, texture);
-    }
     if(decodeQOI(texture, (unsigned char*)data, (int)length)) {
         return newTexture(L, texture);
     }
     if(decodeWEBP(texture, (const uint8_t*)data, length)) {
+        return newTexture(L, texture);
+    }
+    if(decodeSTBI(texture, (unsigned char*)data, (int)length)) {
         return newTexture(L, texture);
     }
 
@@ -760,7 +775,7 @@ static int newAnimatedTexture(lua_State* L) {
     opts.use_threads = 1;
     opts.color_mode = MODE_rgbA;
 
-    void* bytes = malloc(length);
+    void* bytes = malloc(length * sizeof(const char));
 
     if(!bytes) {
         goto WEBP_FAIL;

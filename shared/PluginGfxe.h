@@ -14,7 +14,6 @@
 
 #include <vector>
 #include <cstring>
-#include <string>
 
 #include "qoi/qoi.h"
 
@@ -47,6 +46,18 @@ CoronaExternalBitmapFormat strToFmt(const char* format) {
         return kExternalBitmapFormat_RGBA;
     }
 }
+
+void premultiplyAlpha(unsigned char* buffer, size_t size) {
+    for(size_t i = 0; i < size; i += 4) {
+        unsigned int alpha = buffer[i + 3];
+
+        buffer[i] = (unsigned char)((alpha * buffer[i]) / 255);
+        buffer[i + 1] = (unsigned char)((alpha * buffer[i + 1]) / 255);
+        buffer[i + 2] = (unsigned char)((alpha * buffer[i + 2]) / 255);
+    }
+}
+
+// ----------------------------------------------------------------------------
 
 static int PushCachedFunction(lua_State* L, lua_CFunction F) {
     lua_pushlightuserdata(L, (void*)F);
