@@ -143,6 +143,7 @@ const char* asString(lua_State* L, int index, const char* key, size_t* length) {
 
 static int update(lua_State* L);
 static int modify(lua_State* L);
+static int reset(lua_State* L);
 
 static int trait(lua_State* L, void* context);
 static int frames(lua_State* L, void* context);

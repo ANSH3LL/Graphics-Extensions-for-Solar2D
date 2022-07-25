@@ -180,7 +180,7 @@ Use this to load and play animated images. Supports animated **WEBP**.
 
 #### Methods
 - `update(delta)` - load the next frame of the animation. `delta` should be the time between now and the last call to this method in milliseconds
-- `reset(loop)` - go back to the first frame of the animation so it can be replayed. Also resets the `completed` property. Only works when the animation has played to the last frame. If `loop` is set to `true`, the animation will play on loop once restarted
+- `reset(loop)` - go back to the first frame of the animation so it can be replayed. Also resets the `completed` property. If `loop` is set to `true`, the animation will play on loop once restarted
 
 #### Properties
 **Read-only**
@@ -263,7 +263,7 @@ Same as those accepted by an `AnimatedTexture` in addition to:
 #### Methods
 - `play()` - playback the loaded animation
 - `pause()` - pause playback
-- `reset(loop)` - reset a **completed** animation so it can be replayed. If `loop` is set to `true`, the animation will play on loop once `play()` is called
+- `reset(loop)` - reset a paused or completed animation so it can be replayed from the first frame. If `loop` is set to `true`, the animation will play on loop once `play()` is called. Otherwise, looping will be disabled until `reset()` is called once more even though it was previously enabled.
 - `stop(dispose)` - stop playback. If `dispose` is set to `true`, the `ImageRect` will be removed. Once this method is called, it becomes impossible to reset or continue playing the animation
 
 #### Properties

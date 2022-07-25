@@ -106,6 +106,10 @@ static int GetField(lua_State* L, const char* field, void* context) {
         result = PushCachedFunction(L, modify);
     }
 
+    else if(strcmp(field, "reset") == 0) {
+        result = PushCachedFunction(L, reset);
+    }
+
     else if(strcmp(field, "completed") == 0) {
         result = completed(L, context);
     }
@@ -349,6 +353,27 @@ static int modify(lua_State* L) {
 MODIFY_FAIL:
     lua_pushboolean(L, false);
     return 1;
+}
+
+static int reset(lua_State* L) {
+    Texture* texture = (Texture*)CoronaExternalGetUserData(L, 1);
+
+    if(texture->trait != ANIMATED) {
+        return 0;
+    }
+
+    animated_child->should_loop = lua_toboolean(L, 2);
+    animated_child->completed = false;
+    animated_child->elapsed = 0;
+
+    uint8_t* pixels;
+
+    WebPAnimDecoderReset(animated_child->decoder);
+    WebPAnimDecoderGetNext(animated_child->decoder, &pixels, &animated_child->timestamp);
+
+    texture->pixels = (unsigned char*)pixels;
+
+    return 0;
 }
 
 // ----------------------------------------------------------------------------

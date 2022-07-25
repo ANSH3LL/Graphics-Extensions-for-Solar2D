@@ -177,7 +177,9 @@ function lib.newAnimatedImage(opts)
     --
     rect._time = 0
     rect._playing = false
+    --
     rect._complete = false
+    rect._released = false
     --
     rect.cleanup = opts.cleanup
     rect.listener = opts.listener
@@ -194,7 +196,12 @@ function lib.newAnimatedImage(opts)
         rect.update(event)
         --
         if rect.texture.completed then
-            rect:stop(rect.cleanup)
+            if rect.cleanup then
+                rect:stop(true)
+            else
+                self._complete = true
+                self:pause()
+            end
             --
             if rect.listener then
                 rect.listener()
@@ -203,6 +210,7 @@ function lib.newAnimatedImage(opts)
     end
     --
     rect.play = function(self)
+        if self._released then return end
         if self._complete then return end
         if self._playing then return end
         --
@@ -218,6 +226,8 @@ function lib.newAnimatedImage(opts)
     --
     rect.pause = function(self)
         if not self._playing then return end
+        if self._released then return end
+        --
         self._playing = false
         --
         if self._loop then
@@ -228,10 +238,12 @@ function lib.newAnimatedImage(opts)
     end
     --
     rect.stop = function(self, dispose)
-        if self._complete then return end
+        if self._released then return end
         --
-        self._complete = true
         self:pause()
+        --
+        self._released = true
+        self._complete = true
         --
         self.texture:releaseSelf()
         --
@@ -243,6 +255,18 @@ function lib.newAnimatedImage(opts)
                 end
             )
         end
+    end
+    --
+    rect.reset = function(self, loop)
+        if self._released then return end
+        if self._playing then return end
+        --
+        self._complete = false
+        self._time = 0
+        --
+        rect._loop = loop or false
+        self.texture:reset(rect._loop)
+        self.texture:invalidate()
     end
     --
     return rect
