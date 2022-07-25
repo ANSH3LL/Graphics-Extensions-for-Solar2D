@@ -132,7 +132,7 @@ static void Dispose(void* context) {
         delete child->data;
         delete child->info;
 
-        delete texture->child;
+        delete child;
         goto EXIT;
     }
 
@@ -142,7 +142,7 @@ static void Dispose(void* context) {
         resvg_options_destroy(child->opts);
         resvg_tree_destroy(child->tree);
 
-        delete texture->child;
+        delete child;
     }
 
     if(texture->pixels) {
@@ -159,7 +159,7 @@ static int update(lua_State* L) {
     Texture* texture = (Texture*)CoronaExternalGetUserData(L, 1);
 
     if(texture->trait != ANIMATED) {
-        goto FINISH;
+        return 0;
     }
 
     int delta = luaL_checkinteger(L, 2);
@@ -194,7 +194,6 @@ static int update(lua_State* L) {
         animated_child->elapsed = now;
     }
 
-FINISH:
     return 0;
 }
 
@@ -321,6 +320,7 @@ static int modify(lua_State* L) {
         texture->height = height >= 1 ? height : size.height;
     }
 
+{
     char* pixels = (char*)calloc(texture->width * texture->height * 4, sizeof(char));
 
     if(!pixels) {
@@ -344,6 +344,7 @@ static int modify(lua_State* L) {
         lua_pushboolean(L, true);
         return 1;
     }
+}
 
 MODIFY_FAIL:
     lua_pushboolean(L, false);
@@ -724,6 +725,7 @@ static int newScalableTexture(lua_State* L) {
         texture->height = height >= 1 ? height : size.height;
     }
 
+{
     char* pixels = (char*)calloc(texture->width * texture->height * 4, sizeof(char));
 
     if(!pixels) {
@@ -741,11 +743,12 @@ static int newScalableTexture(lua_State* L) {
     else {
         resvg_tree_destroy(scalable_child->tree);
     }
+}
 
 SVG_FAIL:
     resvg_options_destroy(scalable_child->opts);
 
-    delete texture->child;
+    delete scalable_child;
     delete texture;
 
     lua_pushnil(L);
@@ -775,13 +778,14 @@ static int newAnimatedTexture(lua_State* L) {
     opts.use_threads = 1;
     opts.color_mode = MODE_rgbA;
 
+{
     void* bytes = malloc(length * sizeof(const char));
 
     if(!bytes) {
         goto WEBP_FAIL;
     }
 
-    memcpy(bytes, data, length);
+    memcpy(bytes, data, length * sizeof(const char));
 
     animated_child->data = new WebPData;
     animated_child->data->size = length;
@@ -801,7 +805,9 @@ static int newAnimatedTexture(lua_State* L) {
 
     texture->width = animated_child->info->canvas_width;
     texture->height = animated_child->info->canvas_height;
+}
 
+{
     uint8_t* pixels;
 
     int result = WebPAnimDecoderGetNext(animated_child->decoder, &pixels, &animated_child->timestamp);
@@ -819,9 +825,10 @@ static int newAnimatedTexture(lua_State* L) {
     texture->pixels = (unsigned char*)pixels;
 
     return newTexture(L, texture);
+}
 
 WEBP_FAIL:
-    delete texture->child;
+    delete animated_child;
     delete texture;
 
     lua_pushnil(L);
