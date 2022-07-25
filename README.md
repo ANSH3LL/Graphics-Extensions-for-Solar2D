@@ -27,7 +27,7 @@ Fear not, for the solution to your woes is finally at hand.
 - Supports SVG / SVGZ, WEBP, QOI, PNG & JPEG image formats
 
 ## Usage
-TBD
+Refer to example project and API documentation in the `Corona/` directory
 
 ## Credits
 - [QOI](https://github.com/phoboslab/qoi) by [@phoboslab](https://github.com/phoboslab)
