@@ -67,6 +67,10 @@ settings =
                 }
             }
         },
+        ["plugin.AssetReader"] =
+        {
+            publisherId = 'com.xibalbastudios',
+        }
     },
 
     --

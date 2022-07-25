@@ -1,8 +1,16 @@
 local gfxe = require('plugin.gfxe')
+local asset_reader = require('plugin.AssetReader')
 
-local file = io.open(system.pathForFile('fonts/Inconsolata-Regular.ttf'), 'rb')
-local font = file:read('*a')
-file:close()
+local font
+local platform = system.getInfo('platform')
+
+if platform == 'android' then
+    font = asset_reader.Read('fonts/Inconsolata-Regular.ttf')
+else
+    local file = io.open(system.pathForFile('fonts/Inconsolata-Regular.ttf'), 'rb')
+    font = file:read('*a')
+    file:close()
+end
 
 -------------------------------------------------------------------
 
