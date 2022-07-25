@@ -3,10 +3,10 @@ An extension to Solar2D's supported image formats. Provides full decoding suppor
 
 ## API Documentation
 ### Gotcha
-- Creating a static texture from `.png` or `.jpg` images on android requires you either change the file extension or load the image contents using the [AssetReader plugin](http://ggcrunchy.github.io/corona-plugin-docs/DOCS/AssetReader/api.html).
-- This is a result of the restrictions explained [here](https://docs.coronalabs.com/api/library/system/pathForFile.html#android-file-restrictions).
+- Creating a static texture from `.png` or `.jpg` images on android requires you either change the file extension or load the image contents using the [AssetReader plugin](http://ggcrunchy.github.io/corona-plugin-docs/DOCS/AssetReader/api.html). This is a result of the restrictions explained [here](https://docs.coronalabs.com/api/library/system/pathForFile.html#android-file-restrictions).
 - This also applies for `.ttf` font files that can be used when creating scalable textures containing text. Refer to `/main.lua` for an example on how to do this.
-- If you intend to use any of the textures provided by this library in a DIY fashion, make sure to take a look at how they are used in the library's source code [starting here](https://github.com/ANSH3LL/Graphics-Extensions-for-Solar2D/blob/master/shared/plugin_gfxe.lua#L151) so as to avoid any nasty surprises.
+- If you intend to use any of the textures provided by this library in a DIY fashion, make sure to take a look at how they are used in the library's source code [starting here](https://github.com/ANSH3LL/Graphics-Extensions-for-Solar2D/blob/1b67327172456cb956c9f728a3c7bc4cc06e76f6/shared/plugin_gfxe.lua#L151) so as to avoid any nasty surprises.
+
 
 ### StaticTexture
 Use this to load static images. Supports **WEBP** (no animation), **QOI**, **JPEG** and **PNG**.
@@ -38,7 +38,7 @@ end
 
 
 ### ScalableTexture
-Use this to load vector images. Supports **SVG** and **SVGZ** (more info [here](https://github.com/RazrFalcon/resvg#readme)).
+Use this to load vector images. Supports **SVG** and **SVGZ** (more info can be found [here](https://github.com/RazrFalcon/resvg#readme)).
 
 #### Parameters
 - `format` *Optional* - the texture format to create. Can be `rgba`, `rgb` or `mask`. Defaults to `rgba`
@@ -48,7 +48,6 @@ Use this to load vector images. Supports **SVG** and **SVGZ** (more info [here](
 - `data` *Optional* - a lua string containing the image data. Substitutes `filepath`, `filename` and `baseDir`
 
 #### Configuration
-**All fields are optional**
 - `sizing` *Optional* - a table containing size info. Use with `gfxe.newSizing` for convenience
 - `transform` *Optional* - a table containing a transform matrix. Use with `gfxe.newTransform` for convenience
 - `render` *Optional* - a table containing render output configuration. Use with `gfxe.newRender` for convenience
@@ -60,12 +59,12 @@ Use this to load vector images. Supports **SVG** and **SVGZ** (more info [here](
 - `systemFonts` *Optional* - a boolean describing whether or not to load fonts present on your computer. Defaults to `false`. **This is a very I/O intensive parameter and is unlikely to work on mobile devices**
 
 #### Extra configuration
-**The following will only have an effect when used in the `modify()` method. All fields are optional**
+**The following will only have an effect when used in the `modify()` method**
 - `nodeID` *Optional* - the string ID of a node that should be rendered instead of the whole vector image
 - `svgData` *Optional* - a lua string containing SVG or SVGZ image data that should be rendered to replace the prior vector image
 
 #### Methods
-- `modify(config)` - used to modify and re-render the loaded vector image. `config` is a table. Can be called without arguments to reset the rendered image to its original form. The `systemFonts` field will be ignored. Refer to the `configuration` and `extra configuration` options above.
+- `modify(config)` - used to modify and re-render the loaded vector image. `config` is a table. Can be called without arguments to reset the rendered image to its original form. The `systemFonts` field will be ignored. Refer to the `Configuration` and `Extra configuration` options above.
 
 #### Example
 ```lua
@@ -127,11 +126,11 @@ Use this to set parameters on how to calculate the output size of the vector ima
 - `gfxe.ORIGINAL_SIZE` - renders the vector image in its original size
 - `gfxe.PRESERVE_WIDTH` - ensures the rendered image fits the `width` given
 - `gfxe.PRESERVE_HEIGHT` - ensures the rendered image fits the `height` given
-- `gfxe.ZOOM_BY_RATIO` - scales the rendered image up or down depending on `zoom`. `zoom` must be larger than 0
+- `gfxe.ZOOM_BY_RATIO` - scales the rendered image up or down depending on `zoom`, which must be larger than 0
 
 ##### Cropping types
 - `gfxe.NO_CROPPING` - no cropping of the rendered image
-- `gfxe.CROP_TO_BBOX` - crops the rendered image to the vector image's bounding box and eliminates padding. Might be overzealous in some cases
+- `gfxe.CROP_TO_BBOX` - crops the rendered image to its bounding box and eliminates padding. Might be overzealous in some cases
 
 #### Transform
 Use this to set parameters on how to skew, scale and translate the rendered image. Values must be larger than 0.
@@ -182,10 +181,9 @@ Use this to load and play animated images. Supports animated **WEBP**.
 - `update(delta)` - load the next frame of the animation. `delta` should be the time between now and the last call to this method in milliseconds
 - `reset(loop)` - go back to the first frame of the animation so it can be replayed. Also resets the `completed` property. If `loop` is set to `true`, the animation will play on loop once restarted
 
-#### Properties
-**Read-only**
+#### Properties (Read-only)
 - `frameCount` - how many frames the animation has
-- `completed` - `true` when the animation has played to its last frame and looping was disabled
+- `completed` - is `true` when the animation has played to its last frame and looping was disabled
 
 #### Example
 ```lua
@@ -214,7 +212,7 @@ end
 Use this to display static images. Supports **WEBP** (no animation), **QOI**, **JPEG** and **PNG**. This is actually an `ImageRect`.
 
 #### Parameters
-Same as those accepted by a `StaticTexture`
+Same as in a `StaticTexture`
 
 #### Example
 ```lua
@@ -232,13 +230,13 @@ local image = gfxe.newStaticImage(
 Use this to display and modify vector images. Supports **SVG** and **SVGZ**. This is actually an `ImageRect`.
 
 #### Parameters
-Same as those accepted by a `ScalableTexture`
+Same as in `ScalableTexture`
 
 #### Configuration
-- Same as that accepted by a `ScalableTexture`
+Same as in `ScalableTexture`
 
 #### Methods
-Same as those present in a `ScalableTexture`
+Same as in `ScalableTexture`
 
 #### Example
 ```lua
@@ -256,19 +254,18 @@ local image = gfxe.newScalableImage(
 Use this to play animated images. Supports animated **WEBP**. This is actually an `ImageRect`.
 
 #### Parameters
-Same as those accepted by an `AnimatedTexture` in addition to:
+Same as in an `AnimatedTexture` in addition to:
 - `listener` - a function that will be called when playback of a non-looped animation has been completed
 - `cleanup` - if set to `true`, will auto-remove the `ImageRect` when playback of a non-looped animation has been completed
 
 #### Methods
 - `play()` - playback the loaded animation
 - `pause()` - pause playback
-- `reset(loop)` - reset a paused or completed animation so it can be replayed from the first frame. If `loop` is set to `true`, the animation will play on loop once `play()` is called. Otherwise, looping will be disabled until `reset()` is called once more even though it was previously enabled.
+- `reset(loop)` - reset a paused or completed animation so it can be replayed from the first frame. If `loop` is set to `true`, the animation will play on loop once `play()` is called. Otherwise, looping will be disabled until `reset()` is called once more
 - `stop(dispose)` - stop playback. If `dispose` is set to `true`, the `ImageRect` will be removed. Once this method is called, it becomes impossible to reset or continue playing the animation
 
 #### Properties
-**Read-only**
-Same as those present in an `AnimatedTexture`. Does not expose the `completed` property
+Same as in an `AnimatedTexture`. Does not expose the `completed` property
 
 #### Example
 ```lua
