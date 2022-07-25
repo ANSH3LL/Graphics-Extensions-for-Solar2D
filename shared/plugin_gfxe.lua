@@ -199,8 +199,8 @@ function lib.newAnimatedImage(opts)
             if rect.cleanup then
                 rect:stop(true)
             else
-                self._complete = true
-                self:pause()
+                rect._complete = true
+                rect:pause()
             end
             --
             if rect.listener then
@@ -264,8 +264,8 @@ function lib.newAnimatedImage(opts)
         self._complete = false
         self._time = 0
         --
-        rect._loop = loop or false
-        self.texture:reset(rect._loop)
+        self._loop = loop or false
+        self.texture:reset(self._loop)
         self.texture:invalidate()
     end
     --

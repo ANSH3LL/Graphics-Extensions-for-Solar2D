@@ -74,9 +74,7 @@ webp2:play()
 
 -------------------------------------------------------------------
 
-local callback
-
-local webp3 = gfxe.newAnimatedImage(
+webp3 = gfxe.newAnimatedImage(
     {
         filename = 'images/animated.webp',
         width = 200, height = 200,
@@ -85,8 +83,3 @@ local webp3 = gfxe.newAnimatedImage(
 )
 webp3.x, webp3.y = 897, 497
 webp3:play()
-
-local function callback()
-    webp3:reset()
-    timer.performWithDelay(5000, function() webp3:play() end)
-end
