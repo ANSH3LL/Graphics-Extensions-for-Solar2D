@@ -77,8 +77,7 @@ webp2:play()
 webp3 = gfxe.newAnimatedImage(
     {
         filename = 'images/animated.webp',
-        width = 200, height = 200,
-        listener = callback
+        width = 200, height = 200
     }
 )
 webp3.x, webp3.y = 897, 497
