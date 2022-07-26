@@ -302,6 +302,8 @@ function lib.newScalableImage(opts, conf)
     end
     --
     rect.removeSelf = function(self)
+        if self._disposed then return end
+        --
         self._disposed = true
         self.texture:releaseSelf()
         --
