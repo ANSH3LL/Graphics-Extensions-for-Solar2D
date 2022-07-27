@@ -8,8 +8,6 @@ Would you like to support high screen resolutions without bloating up your app/g
 
 Would you like to play short animations on loop like GIFs or animated stickers?
 
-Would you like to take advantage of the super fast decoding of [QOI](https://qoiformat.org/)?
-
 Is the nanosvg plugin too inaccurate/slow/minimal?
 
 Are the standard image formats supported by Solar2D too antiquated for you?
