@@ -443,8 +443,8 @@ bool decodeSTBI(Texture* texture, unsigned char* data, int length) {
     }
 
     if(bpp == 4 && channels == 4) {
-        size_t buffer_size = width * height * 4;
-        premultiplyAlpha(pixels, buffer_size);
+        size_t buffer_size = width * height;
+        premultiplyAlpha((uint32_t*)pixels, buffer_size);
     }
 
     texture->width = width;
@@ -466,8 +466,8 @@ bool decodeQOI(Texture* texture, unsigned char* data, int length) {
     }
 
     if(bpp == 4 && info.channels == 4) {
-        size_t buffer_size = info.width * info.height * 4;
-        premultiplyAlpha(pixels, buffer_size);
+        size_t buffer_size = info.width * info.height;
+        premultiplyAlpha((uint32_t*)pixels, buffer_size);
     }
 
     texture->pixels = stbi__convert_format(pixels, info.channels, bpp, info.width, info.height);

@@ -47,13 +47,25 @@ CoronaExternalBitmapFormat strToFmt(const char* format) {
     }
 }
 
-void premultiplyAlpha(unsigned char* buffer, size_t size) {
-    for(size_t i = 0; i < size; i += 4) {
-        unsigned int alpha = buffer[i + 3];
-
-        buffer[i] = (unsigned char)((alpha * buffer[i]) / 255);
-        buffer[i + 1] = (unsigned char)((alpha * buffer[i + 1]) / 255);
-        buffer[i + 2] = (unsigned char)((alpha * buffer[i + 2]) / 255);
+// https://arxiv.org/pdf/2202.02864v1.pdf
+// Thanks to @StarCrunch on the Solar2D forums
+inline void premultiplyAlpha(uint32_t* buffer, size_t size) {
+    for(size_t i = 0; i < size; ++i, ++buffer) {
+        uint32_t rb, ga;
+        uint32_t color = *buffer;
+        uint32_t alpha = color >> 24;
+        color |= 0xff000000;
+        rb = color & 0x00ff00ff;
+        rb *= alpha;
+        rb += 0x00800080;
+        rb += (rb >> 8) & 0x00ff00ff;
+        rb &= 0xff00ff00;
+        ga = (color >> 8) & 0x00ff00ff;
+        ga *= alpha;
+        ga += 0x00800080;
+        ga += (ga >> 8) & 0x00ff00ff;
+        ga &= 0xff00ff00;
+        *buffer = ga | (rb >> 8);
     }
 }
 
