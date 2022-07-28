@@ -4,8 +4,8 @@ An extension to Solar2D's supported image formats. Provides full decoding suppor
 ## API Documentation
 ### Gotcha
 - Creating a static texture from `.png` or `.jpg` images on android requires you either change the file extension or load the image contents using the [AssetReader plugin](http://ggcrunchy.github.io/corona-plugin-docs/DOCS/AssetReader/api.html). This is a result of the restrictions explained [here](https://docs.coronalabs.com/api/library/system/pathForFile.html#android-file-restrictions).
-- This also applies for `.ttf` font files that can be used when creating scalable textures containing text. Refer to `/main.lua` for an example on how to do this.
-- If you intend to use any of the textures provided by this library in a DIY fashion, make sure to take a look at how they are used in the library's source code [starting here](https://github.com/ANSH3LL/Graphics-Extensions-for-Solar2D/blob/1b67327172456cb956c9f728a3c7bc4cc06e76f6/shared/plugin_gfxe.lua#L151) so as to avoid any nasty surprises.
+- This also applies for `.ttf` font files that can be used when creating scalable textures containing text. Refer to `main.lua` for an example on how to do this.
+- If you intend to use any of the texture objects provided by this library in a DIY fashion, make sure to take a look at how they are used in the library's source code [starting here](https://github.com/ANSH3LL/Graphics-Extensions-for-Solar2D/blob/1b67327172456cb956c9f728a3c7bc4cc06e76f6/shared/plugin_gfxe.lua#L151) so as to avoid any nasty surprises.
 
 
 ### StaticTexture
