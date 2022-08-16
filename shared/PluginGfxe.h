@@ -14,7 +14,9 @@
 
 #include <vector>
 #include <cstring>
+
 #include <stdio.h>
+#include <sys/stat.h>
 
 #include "qoi/qoi.h"
 
@@ -23,6 +25,13 @@
 
 #include "resvg/resvg.h"
 #include "stbi/stb_image.h"
+
+#ifdef _WIN32
+    #define fstat _fstat
+    #define stat_struct struct _stat
+#else
+    #define stat_struct struct stat
+#endif
 
 // ----------------------------------------------------------------------------
 
@@ -72,29 +81,33 @@ inline void premultiplyAlpha(uint32_t* buffer, size_t size) {
 
 void* readFile(const char* filename, size_t* length) {
     void* buffer;
+    size_t file_size;
 
     size_t bytes_read;
-    FILE* f = fopen(filename, "rb");
+    FILE* fp = fopen(filename, "rb");
 
-    if(!f) {
+    if(!fp) {
         return NULL;
     }
 
-    fseek(f, 0, SEEK_END);
-    long int file_size = ftell(f);
+    stat_struct file_info;
+    if(fstat(fileno(fp), &file_info)) {
+        goto READ_FAIL;
+    }
+
+    file_size = file_info.st_size;
 
     if(file_size <= 0) {
         goto READ_FAIL;
     }
 
-    fseek(f, 0, SEEK_SET);
     buffer = malloc(file_size);
 
     if(!buffer) {
         goto READ_FAIL;
     }
 
-    bytes_read = fread(buffer, 1, file_size, f);
+    bytes_read = fread(buffer, 1, file_size, fp);
 
     if(bytes_read != file_size) {
         free(buffer);
@@ -103,11 +116,11 @@ void* readFile(const char* filename, size_t* length) {
 
     (*length) = bytes_read;
 
-    fclose(f);
+    fclose(fp);
     return buffer;
 
 READ_FAIL:
-    fclose(f);
+    fclose(fp);
     return NULL;
 }
 
