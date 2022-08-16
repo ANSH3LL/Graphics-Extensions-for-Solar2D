@@ -1,17 +1,5 @@
 local Library = require('CoronaLibrary')
 
-local function readFile(path)
-    if not path then return end
-    --
-    local file = io.open(path, 'rb')
-    if not file then return end
-    --
-    local contents = file:read('*a')
-    io.close(file)
-    --
-    return contents
-end
-
 -- Create stub library
 local lib = Library:new(
     {
@@ -96,53 +84,59 @@ end
 ---------------------------------------------------------------------------
 
 function lib.newStaticTexture(opts)
-    local data
+    local data, path
     local fmt = opts.format or 'rgba'
     --
     if opts.data then
         data = opts.data
     elseif opts.filepath then
-        data = readFile(opts.filepath)
+        path = opts.filepath
     elseif opts.filename then
-        data = readFile(system.pathForFile(opts.filename, opts.baseDir))
+        path = system.pathForFile(opts.filename, opts.baseDir)
     end
     --
     if data then
-        return lib._newStaticTexture(fmt, data)
+        return lib._newStaticTexture(true, fmt, data)
+    elseif path then
+        return lib._newStaticTexture(false, fmt, path)
     end
 end
 
 function lib.newAnimatedTexture(opts)
-    local data
+    local data, path
     local loop = opts.loop or false
     --
     if opts.data then
         data = opts.data
     elseif opts.filepath then
-        data = readFile(opts.filepath)
+        path = opts.filepath
     elseif opts.filename then
-        data = readFile(system.pathForFile(opts.filename, opts.baseDir))
+        path = system.pathForFile(opts.filename, opts.baseDir)
     end
     --
     if data then
-        return lib._newAnimatedTexture(loop, data)
+        return lib._newAnimatedTexture(true, loop, data)
+    elseif path then
+        return lib._newAnimatedTexture(false, loop, path)
     end
 end
 
 function lib.newScalableTexture(opts, conf)
-    local data
+    local data, path
     local fmt = opts.format or 'rgba'
     --
     if opts.data then
         data = opts.data
     elseif opts.filepath then
-        data = readFile(opts.filepath)
+        path = opts.filepath
     elseif opts.filename then
-        data = readFile(system.pathForFile(opts.filename, opts.baseDir))
+        path = system.pathForFile(opts.filename, opts.baseDir)
     end
     --
     if data then
-        return lib._newScalableTexture(fmt, data, conf)
+        return lib._newScalableTexture(true, fmt, data, conf)
+    elseif path then
+        return lib._newScalableTexture(false, fmt, path, conf)
     end
 end
 

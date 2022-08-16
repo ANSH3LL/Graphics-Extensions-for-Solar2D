@@ -19,6 +19,8 @@
 #define ANIMATED 2
 #define SCALABLE 3
 
+#define FREE_BUFFER if(!is_raw) { free((void*)data); }
+
 #define animated_child static_cast<AnimatedTexture*>(texture->child)
 #define scalable_child static_cast<ScalableTexture*>(texture->child)
 
@@ -233,6 +235,9 @@ static int modify(lua_State* L) {
         const char* languages = asString(L, 2, "languages");
         const char* font_family = asString(L, 2, "fontFamily");
 
+        nodeID = asString(L, 2, "nodeID");
+        svg_data = asString(L, 2, "svgData", &length);
+
         double font_size = asDouble(L, 2, "fontSize");
 
         size_t font_length = 0;
@@ -257,9 +262,6 @@ static int modify(lua_State* L) {
         if(font_data) {
             resvg_options_load_font_data(scalable_child->opts, font_data, font_length);
         }
-
-        nodeID = asString(L, 2, "nodeID");
-        svg_data = asString(L, 2, "svgData", &length);
 
         should_crop = setupSVG(scalable_child->opts, &fit_to, &transform, &width, &height, &multiplier, r, s, t);
     }
@@ -615,26 +617,49 @@ static int newTexture(lua_State* L, void* texture) {
 // ----------------------------------------------------------------------------
 
 static int newStaticTexture(lua_State* L) {
+    const char* data;
     size_t length = 0;
     Texture* texture = new Texture;
 
-    const char* format = luaL_checkstring(L, 1);
-    const char* data = luaL_checklstring(L, 2, &length);
+    bool is_raw = lua_toboolean(L, 1);
+    const char* format = luaL_checkstring(L, 2);
+
+    if(is_raw) {
+        data = luaL_checklstring(L, 3, &length);
+    }
+    else {
+        const char* filename = luaL_checkstring(L, 3);
+        void* file_content = readFile(filename, &length);
+
+        if(file_content) {
+            data = (const char*)file_content;
+        }
+        else {
+            goto STATIC_FAIL;
+        }
+    }
 
     texture->trait = STATIC;
     texture->format = strToFmt(format);
 
     if(decodeQOI(texture, (unsigned char*)data, (int)length)) {
+        FREE_BUFFER
         return newTexture(L, texture);
     }
     if(decodeWEBP(texture, (const uint8_t*)data, length)) {
+        FREE_BUFFER
         return newTexture(L, texture);
     }
     if(decodeSTBI(texture, (unsigned char*)data, (int)length)) {
+        FREE_BUFFER
         return newTexture(L, texture);
     }
 
+    FREE_BUFFER
+
+STATIC_FAIL:
     delete texture;
+
     lua_pushnil(L);
     return 1;
 }
@@ -642,15 +667,35 @@ static int newStaticTexture(lua_State* L) {
 // ----------------------------------------------------------------------------
 
 static int newScalableTexture(lua_State* L) {
+    const char* data;
     size_t length = 0;
+
     double multiplier = 0;
     bool should_crop = false;
 
     int width = 0, height = 0;
     Texture* texture = new Texture;
 
-    const char* format = luaL_checkstring(L, 1);
-    const char* data = luaL_checklstring(L, 2, &length);
+    bool is_raw = lua_toboolean(L, 1);
+    const char* format = luaL_checkstring(L, 2);
+
+    if(is_raw) {
+        data = luaL_checklstring(L, 3, &length);
+    }
+    else {
+        const char* filename = luaL_checkstring(L, 3);
+        void* file_content = readFile(filename, &length);
+
+        if(file_content) {
+            data = (const char*)file_content;
+        }
+        else {
+            delete texture;
+
+            lua_pushnil(L);
+            return 1;
+        }
+    }
 
     texture->trait = SCALABLE;
     texture->format = strToFmt(format);
@@ -661,21 +706,22 @@ static int newScalableTexture(lua_State* L) {
     resvg_transform transform = resvg_transform_identity();
     resvg_fit_to fit_to = { RESVG_FIT_TO_TYPE_ORIGINAL, 1 };
 
-    if(lua_istable(L, 3)) {
-        std::vector<double> r = asArray(L, 3, "render");
+    if(lua_istable(L, 4)) {
+        std::vector<double> r = asArray(L, 4, "render");
 
-        std::vector<double> s = asArray(L, 3, "sizing");
-        std::vector<double> t = asArray(L, 3, "transform");
+        std::vector<double> s = asArray(L, 4, "sizing");
+        std::vector<double> t = asArray(L, 4, "transform");
 
-        const char* res_path = asString(L, 3, "resourceDir");
+        const char* res_path = asString(L, 4, "resourceDir");
 
-        const char* languages = asString(L, 3, "languages");
-        const char* font_family = asString(L, 3, "fontFamily");
+        const char* languages = asString(L, 4, "languages");
+        const char* font_family = asString(L, 4, "fontFamily");
 
-        double font_size = asDouble(L, 3, "fontSize");
+        double font_size = asDouble(L, 4, "fontSize");
+        bool system_fonts = asBoolean(L, 4, "systemFonts");
 
         size_t font_length = 0;
-        const char* font_data = asString(L, 3, "fontData", &font_length);
+        const char* font_data = asString(L, 4, "fontData", &font_length);
 
         if(res_path) {
             resvg_options_set_resources_dir(scalable_child->opts, res_path);
@@ -693,7 +739,7 @@ static int newScalableTexture(lua_State* L) {
             resvg_options_set_font_size(scalable_child->opts, font_size);
         }
 
-        if(asBoolean(L, 3, "systemFonts")) {
+        if(system_fonts) {
             resvg_options_load_system_fonts(scalable_child->opts);
         }
 
@@ -706,6 +752,8 @@ static int newScalableTexture(lua_State* L) {
 
     int bpp = CoronaExternalFormatBPP(texture->format);
     int result = resvg_parse_tree_from_data(data, (int)length, scalable_child->opts, &scalable_child->tree);
+
+    FREE_BUFFER
 
     if(result != RESVG_OK) {
         goto SVG_FAIL;
@@ -783,11 +831,29 @@ SVG_FAIL:
 // ----------------------------------------------------------------------------
 
 static int newAnimatedTexture(lua_State* L) {
+    void* bytes;
+    const char* data;
+
     size_t length = 0;
     Texture* texture = new Texture;
 
-    bool loop = lua_toboolean(L, 1);
-    const char* data = luaL_checklstring(L, 2, &length);
+    bool is_raw = lua_toboolean(L, 1);
+    bool loop = lua_toboolean(L, 2);
+
+    if(is_raw) {
+        data = luaL_checklstring(L, 3, &length);
+    }
+    else {
+        const char* filename = luaL_checkstring(L, 3);
+        bytes = readFile(filename, &length);
+
+        if(!bytes) {
+            delete texture;
+
+            lua_pushnil(L);
+            return 1;
+        }
+    }
 
     texture->trait = ANIMATED;
     texture->format = strToFmt("rgba");
@@ -803,14 +869,15 @@ static int newAnimatedTexture(lua_State* L) {
     opts.use_threads = 1;
     opts.color_mode = MODE_rgbA;
 
-{
-    void* bytes = malloc(length * sizeof(const char));
+    if(is_raw) {
+        bytes = malloc(length * sizeof(const char));
 
-    if(!bytes) {
-        goto WEBP_FAIL;
+        if(!bytes) {
+            goto WEBP_FAIL;
+        }
+
+        memcpy(bytes, data, length * sizeof(const char));
     }
-
-    memcpy(bytes, data, length * sizeof(const char));
 
     animated_child->data = new WebPData;
     animated_child->data->size = length;
@@ -830,7 +897,6 @@ static int newAnimatedTexture(lua_State* L) {
 
     texture->width = animated_child->info->canvas_width;
     texture->height = animated_child->info->canvas_height;
-}
 
 {
     uint8_t* pixels;

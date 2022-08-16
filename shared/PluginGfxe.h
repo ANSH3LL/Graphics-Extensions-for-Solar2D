@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <cstring>
+#include <stdio.h>
 
 #include "qoi/qoi.h"
 
@@ -67,6 +68,47 @@ inline void premultiplyAlpha(uint32_t* buffer, size_t size) {
         ga &= 0xff00ff00;
         *buffer = ga | (rb >> 8);
     }
+}
+
+void* readFile(const char* filename, size_t* length) {
+    void* buffer;
+
+    size_t bytes_read;
+    FILE* f = fopen(filename, "rb");
+
+    if(!f) {
+        return NULL;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long int file_size = ftell(f);
+
+    if(file_size <= 0) {
+        goto READ_FAIL;
+    }
+
+    fseek(f, 0, SEEK_SET);
+    buffer = malloc(file_size);
+
+    if(!buffer) {
+        goto READ_FAIL;
+    }
+
+    bytes_read = fread(buffer, 1, file_size, f);
+
+    if(bytes_read != file_size) {
+        free(buffer);
+        goto READ_FAIL;
+    }
+
+    (*length) = bytes_read;
+
+    fclose(f);
+    return buffer;
+
+READ_FAIL:
+    fclose(f);
+    return NULL;
 }
 
 // ----------------------------------------------------------------------------
