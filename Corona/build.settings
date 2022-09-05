@@ -59,11 +59,11 @@ settings =
             {
                 ['win32-sim'] =
                 {
-                    url = 'https://github.com/ANSH3LL/Graphics-Extensions-for-Solar2D/releases/download/v0.1/win32-sim.tgz'
+                    url = 'https://github.com/ANSH3LL/Graphics-Extensions-for-Solar2D/releases/download/v0.2/win32-sim.tgz'
                 },
                 ['android'] =
                 {
-                    url = 'https://github.com/ANSH3LL/Graphics-Extensions-for-Solar2D/releases/download/v0.1/android.tgz'
+                    url = 'https://github.com/ANSH3LL/Graphics-Extensions-for-Solar2D/releases/download/v0.2/android.tgz'
                 }
             }
         },
