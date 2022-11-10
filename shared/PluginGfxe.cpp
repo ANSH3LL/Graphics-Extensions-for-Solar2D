@@ -274,7 +274,7 @@ static int modify(lua_State* L) {
         }
     }
 
-    if(!resvg_is_image_empty(scalable_child->tree)) {
+    if(resvg_is_image_empty(scalable_child->tree)) {
         goto MODIFY_FAIL;
     }
 
@@ -759,7 +759,7 @@ static int newScalableTexture(lua_State* L) {
         goto SVG_FAIL;
     }
 
-    if(!resvg_is_image_empty(scalable_child->tree)) {
+    if(resvg_is_image_empty(scalable_child->tree)) {
         resvg_tree_destroy(scalable_child->tree);
 
         goto SVG_FAIL;
