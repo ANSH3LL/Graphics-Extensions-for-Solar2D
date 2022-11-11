@@ -286,6 +286,9 @@ static int modify(lua_State* L) {
         resvg_rect bbox;
         resvg_get_image_bbox(scalable_child->tree, &bbox);
 
+        bbox.width = makeEven(bbox.width);
+        bbox.height = makeEven(bbox.height);
+
         resvg_rect vbox = resvg_get_image_viewbox(scalable_child->tree);
 
         if(multiplier > 0) {
@@ -310,8 +313,8 @@ static int modify(lua_State* L) {
             resvg_path_bbox pbox;
             resvg_get_node_bbox(scalable_child->tree, nodeID, &pbox);
 
-            size.width = pbox.width;
-            size.height = pbox.height;
+            size.width = makeEven(pbox.width);
+            size.height = makeEven(pbox.height);
         }
         else {
             size = resvg_get_image_size(scalable_child->tree);
