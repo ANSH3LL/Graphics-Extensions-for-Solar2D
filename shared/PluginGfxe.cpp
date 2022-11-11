@@ -769,6 +769,9 @@ static int newScalableTexture(lua_State* L) {
         resvg_rect bbox;
         resvg_get_image_bbox(scalable_child->tree, &bbox);
 
+        bbox.width = makeEven(bbox.width);
+        bbox.height = makeEven(bbox.height);
+
         resvg_rect vbox = resvg_get_image_viewbox(scalable_child->tree);
 
         if(multiplier > 0) {
