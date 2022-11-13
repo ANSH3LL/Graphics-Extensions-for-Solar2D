@@ -20,6 +20,7 @@
 #define SCALABLE 3
 
 #define FREE_BUFFER if(!is_raw) { free((void*)data); }
+#define EVEN_NUMBER(num) ((int)(num) % 2 == 0 ? (num) : (num) + 1)
 
 #define animated_child static_cast<AnimatedTexture*>(texture->child)
 #define scalable_child static_cast<ScalableTexture*>(texture->child)
@@ -286,24 +287,21 @@ static int modify(lua_State* L) {
         resvg_rect bbox;
         resvg_get_image_bbox(scalable_child->tree, &bbox);
 
-        bbox.width = makeEven(bbox.width);
-        bbox.height = makeEven(bbox.height);
-
         resvg_rect vbox = resvg_get_image_viewbox(scalable_child->tree);
 
         if(multiplier > 0) {
-            transform.e -= (bbox.x - vbox.x) * multiplier;
-            transform.f -= (bbox.y - vbox.y) * multiplier;
+            transform.e -= ((bbox.x - vbox.x) * multiplier) - 2;
+            transform.f -= ((bbox.y - vbox.y) * multiplier) - 2;
 
-            texture->width = bbox.width * multiplier;
-            texture->height = bbox.height * multiplier;
+            texture->width = EVEN_NUMBER(bbox.width * multiplier) + 4;
+            texture->height = EVEN_NUMBER(bbox.height * multiplier) + 4;
         }
         else {
-            transform.e -= bbox.x - vbox.x;
-            transform.f -= bbox.y - vbox.y;
+            transform.e -= bbox.x - vbox.x - 2;
+            transform.f -= bbox.y - vbox.y - 2;
 
-            texture->width = bbox.width;
-            texture->height = bbox.height;
+            texture->width = EVEN_NUMBER(bbox.width) + 4;
+            texture->height = EVEN_NUMBER(bbox.height) + 4;
         }
     }
     else {
@@ -313,8 +311,8 @@ static int modify(lua_State* L) {
             resvg_path_bbox pbox;
             resvg_get_node_bbox(scalable_child->tree, nodeID, &pbox);
 
-            size.width = makeEven(pbox.width);
-            size.height = makeEven(pbox.height);
+            size.width = pbox.width;
+            size.height = pbox.height;
         }
         else {
             size = resvg_get_image_size(scalable_child->tree);
@@ -772,24 +770,21 @@ static int newScalableTexture(lua_State* L) {
         resvg_rect bbox;
         resvg_get_image_bbox(scalable_child->tree, &bbox);
 
-        bbox.width = makeEven(bbox.width);
-        bbox.height = makeEven(bbox.height);
-
         resvg_rect vbox = resvg_get_image_viewbox(scalable_child->tree);
 
         if(multiplier > 0) {
-            transform.e -= (bbox.x - vbox.x) * multiplier;
-            transform.f -= (bbox.y - vbox.y) * multiplier;
+            transform.e -= ((bbox.x - vbox.x) * multiplier) - 2;
+            transform.f -= ((bbox.y - vbox.y) * multiplier) - 2;
 
-            texture->width = bbox.width * multiplier;
-            texture->height = bbox.height * multiplier;
+            texture->width = EVEN_NUMBER(bbox.width * multiplier) + 4;
+            texture->height = EVEN_NUMBER(bbox.height * multiplier) + 4;
         }
         else {
-            transform.e -= bbox.x - vbox.x;
-            transform.f -= bbox.y - vbox.y;
+            transform.e -= bbox.x - vbox.x - 2;
+            transform.f -= bbox.y - vbox.y - 2;
 
-            texture->width = bbox.width;
-            texture->height = bbox.height;
+            texture->width = EVEN_NUMBER(bbox.width) + 4;
+            texture->height = EVEN_NUMBER(bbox.height) + 4;
         }
     }
     else {

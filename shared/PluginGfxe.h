@@ -208,12 +208,6 @@ const char* asString(lua_State* L, int index, const char* key, size_t* length) {
 
 // ----------------------------------------------------------------------------
 
-double makeEven(double number) {
-    return (int)number % 2 == 0 ? number : number + 1;
-}
-
-// ----------------------------------------------------------------------------
-
 static int update(lua_State* L);
 static int modify(lua_State* L);
 static int reset(lua_State* L);
