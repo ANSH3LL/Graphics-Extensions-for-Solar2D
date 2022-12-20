@@ -34,11 +34,19 @@ sizing.zoom = 2
 local svg2 = gfxe.newScalableImage(
     {
         filename = 'images/svg_logo.svg'
-    },
-    {
-        sizing = sizing:raw()
     }
 )
+
+timer.performWithDelay(2000,
+    function()
+        svg2:modify(
+            {
+                sizing = sizing:raw()
+            }
+        )
+    end
+)
+
 svg2.x, svg2.y = display.contentCenterX, display.contentCenterY
 
 -------------------------------------------------------------------

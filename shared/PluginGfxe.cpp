@@ -65,6 +65,9 @@ struct Texture {
 struct ScalableTexture {
     resvg_options* opts;
     resvg_render_tree* tree = NULL;
+
+    int data_size = 0;
+    const char* data = NULL;
 };
 
 struct AnimatedTexture {
@@ -149,6 +152,7 @@ static void Dispose(void* context) {
         resvg_options_destroy(child->opts);
         resvg_tree_destroy(child->tree);
 
+        free((void*)child->data);
         delete child;
     }
 
@@ -268,9 +272,29 @@ static int modify(lua_State* L) {
     }
 
     if(svg_data) {
+        void* bytes;
+
         int result = resvg_parse_tree_from_data(svg_data, (int)length, scalable_child->opts, &scalable_child->tree);
 
         if(result != RESVG_OK) {
+            goto MODIFY_FAIL;
+        }
+
+        bytes = realloc((void*)scalable_child->data, length * sizeof(const char));
+
+        if(!bytes) {
+            goto MODIFY_FAIL;
+        }
+
+        memcpy(bytes, svg_data, length * sizeof(const char));
+
+        scalable_child->data = (const char*)bytes;
+        scalable_child->data_size = (int)length;
+    }
+    else {
+        int result = resvg_parse_tree_from_data(scalable_child->data, scalable_child->data_size, scalable_child->opts, &scalable_child->tree);
+
+        if (result != RESVG_OK) {
             goto MODIFY_FAIL;
         }
     }
@@ -668,6 +692,8 @@ STATIC_FAIL:
 // ----------------------------------------------------------------------------
 
 static int newScalableTexture(lua_State* L) {
+    void* bytes;
+
     const char* data;
     size_t length = 0;
 
@@ -685,12 +711,9 @@ static int newScalableTexture(lua_State* L) {
     }
     else {
         const char* filename = luaL_checkstring(L, 3);
-        void* file_content = readFile(filename, &length);
+        bytes = readFile(filename, &length);
 
-        if(file_content) {
-            data = (const char*)file_content;
-        }
-        else {
+        if(!bytes) {
             delete texture;
 
             lua_pushnil(L);
@@ -706,6 +729,19 @@ static int newScalableTexture(lua_State* L) {
 
     resvg_transform transform = resvg_transform_identity();
     resvg_fit_to fit_to = { RESVG_FIT_TO_TYPE_ORIGINAL, 1 };
+
+    if(is_raw) {
+        bytes = malloc(length * sizeof(const char));
+
+        if(!bytes) {
+            goto SVG_FAIL;
+        }
+
+        memcpy(bytes, data, length * sizeof(const char));
+    }
+
+    scalable_child->data = (const char*)bytes;
+    scalable_child->data_size = (int)length;
 
     if(lua_istable(L, 4)) {
         std::vector<double> r = asArray(L, 4, "render");
@@ -752,9 +788,7 @@ static int newScalableTexture(lua_State* L) {
     }
 
     int bpp = CoronaExternalFormatBPP(texture->format);
-    int result = resvg_parse_tree_from_data(data, (int)length, scalable_child->opts, &scalable_child->tree);
-
-    FREE_BUFFER
+    int result = resvg_parse_tree_from_data(scalable_child->data, scalable_child->data_size, scalable_child->opts, &scalable_child->tree);
 
     if(result != RESVG_OK) {
         goto SVG_FAIL;
