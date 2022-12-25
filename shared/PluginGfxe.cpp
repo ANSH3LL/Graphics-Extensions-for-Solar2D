@@ -787,12 +787,13 @@ static int newScalableTexture(lua_State* L) {
         should_crop = setupSVG(scalable_child->opts, &fit_to, &transform, &width, &height, &multiplier, r, s, t);
     }
 
-    int bpp = CoronaExternalFormatBPP(texture->format);
+{
     int result = resvg_parse_tree_from_data(scalable_child->data, scalable_child->data_size, scalable_child->opts, &scalable_child->tree);
 
     if(result != RESVG_OK) {
         goto SVG_FAIL;
     }
+}
 
     if(resvg_is_image_empty(scalable_child->tree)) {
         resvg_tree_destroy(scalable_child->tree);
@@ -842,6 +843,8 @@ static int newScalableTexture(lua_State* L) {
     }
 
     resvg_render(scalable_child->tree, fit_to, transform, texture->width, texture->height, pixels);
+
+    int bpp = CoronaExternalFormatBPP(texture->format);
 
     texture->pixels = stbi__convert_format((unsigned char*)pixels, 4, bpp, texture->width, texture->height);
 
