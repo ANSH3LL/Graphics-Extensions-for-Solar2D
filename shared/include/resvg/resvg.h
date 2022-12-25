@@ -17,9 +17,9 @@
 #include <stdint.h>
 
 #define RESVG_MAJOR_VERSION 0
-#define RESVG_MINOR_VERSION 23
+#define RESVG_MINOR_VERSION 28
 #define RESVG_PATCH_VERSION 0
-#define RESVG_VERSION "0.23.0"
+#define RESVG_VERSION "0.28.0"
 
 /**
  * @brief List of possible errors.
@@ -435,7 +435,7 @@ int32_t resvg_parse_tree_from_data(const char *data,
  * @brief Checks that tree has any nodes.
  *
  * @param tree Render tree.
- * @return Returns `true` if tree has any nodes.
+ * @return Returns `true` if tree has no nodes.
  */
 bool resvg_is_image_empty(const resvg_render_tree *tree);
 

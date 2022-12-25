@@ -38,7 +38,7 @@ function lib.newSizing()
         aspect = 0, zoom = 1, crop = 0
     }
     --
-    sizing.raw = function(self)
+    function sizing:raw()
         return {
             self.width, self.height,
             self.aspect, self.zoom, self.crop
@@ -55,7 +55,7 @@ function lib.newTransform()
         translateX = 0, translateY = 0
     }
     --
-    transform.raw = function(self)
+    function transform:raw()
         return {
             self.scaleX, self.skewY, self.skewX,
             self.scaleY, self.translateX, self.translateY
@@ -71,7 +71,7 @@ function lib.newRender()
         text = 1, image = 0
     }
     --
-    render.raw = function(self)
+    function render:raw()
         return {
             self.dpi, self.shape,
             self.text, self.image
@@ -150,7 +150,6 @@ function lib.newStaticImage(opts)
     local height = opts.height or texture.height
     --
     local rect = display.newImageRect(texture.filename, texture.baseDir, width, height)
-    rect.trait = texture.trait
     texture:releaseSelf()
     --
     return rect
@@ -164,9 +163,6 @@ function lib.newAnimatedImage(opts)
     local height = opts.height or texture.height
     --
     local rect = display.newImageRect(texture.filename, texture.baseDir, width, height)
-    rect.frameCount = texture.frameCount
-    --
-    rect.trait = texture.trait
     rect.texture = texture
     --
     rect._time = 0
@@ -203,7 +199,7 @@ function lib.newAnimatedImage(opts)
         end
     end
     --
-    rect.play = function(self)
+    function rect:play()
         if self._released then return end
         if self._complete then return end
         if self._playing then return end
@@ -218,7 +214,7 @@ function lib.newAnimatedImage(opts)
         end
     end
     --
-    rect.pause = function(self)
+    function rect:pause()
         if not self._playing then return end
         if self._released then return end
         --
@@ -231,7 +227,7 @@ function lib.newAnimatedImage(opts)
         end
     end
     --
-    rect.stop = function(self, dispose)
+    function rect:stop(dispose)
         if self._released then return end
         --
         self:pause()
@@ -251,7 +247,7 @@ function lib.newAnimatedImage(opts)
         end
     end
     --
-    rect.reset = function(self, loop)
+    function rect:reset(loop)
         if self._released then return end
         if self._playing then return end
         --
@@ -263,6 +259,12 @@ function lib.newAnimatedImage(opts)
         self.texture:invalidate()
     end
     --
+    function rect:finalize(event)
+        if self._released then return end
+        self.texture:releaseSelf()
+    end
+    --
+    rect:addEventListener('finalize')
     return rect
 end
 
@@ -274,15 +276,9 @@ function lib.newScalableImage(opts, conf)
     local height = opts.height or texture.height
     --
     local rect = display.newImageRect(texture.filename, texture.baseDir, width, height)
-    rect.trait = texture.trait
     rect.texture = texture
     --
-    rect._disposed = false
-    rect._dispose = rect.removeSelf
-    --
-    rect.modify = function(self, conf)
-        if self._disposed then return end
-        --
+    function rect:modify(conf)
         if self.texture:modify(conf) then
             self.texture:invalidate()
             --
@@ -295,20 +291,11 @@ function lib.newScalableImage(opts, conf)
         return false
     end
     --
-    rect.removeSelf = function(self)
-        if self._disposed then return end
-        --
-        self._disposed = true
+    function rect:finalize(event)
         self.texture:releaseSelf()
-        --
-        timer.performWithDelay(1,
-            function()
-                self.texture = nil
-                self:_dispose()
-            end
-        )
     end
     --
+    rect:addEventListener('finalize')
     return rect
 end
 
