@@ -155,6 +155,8 @@ function lib.newStaticImage(opts)
     return rect
 end
 
+-- TODO: Get rid of opts.cleanup & rect:stop & rect._complete & rect._released
+-- TODO: Rename rect._playing to rect.isPlaying & rect._loop to rect.isLooping
 function lib.newAnimatedImage(opts)
     local texture = lib.newAnimatedTexture(opts)
     if not texture then return end

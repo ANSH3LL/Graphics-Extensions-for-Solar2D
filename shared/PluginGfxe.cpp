@@ -227,7 +227,6 @@ static int modify(lua_State* L) {
     int bpp = CoronaExternalFormatBPP(texture->format);
 
     resvg_transform transform = resvg_transform_identity();
-    resvg_fit_to fit_to = { RESVG_FIT_TO_TYPE_ORIGINAL, 1 };
 
     if(lua_istable(L, 2)) {
         std::vector<double> r = asArray(L, 2, "render");
@@ -268,7 +267,7 @@ static int modify(lua_State* L) {
             resvg_options_load_font_data(scalable_child->opts, font_data, font_length);
         }
 
-        should_crop = setupSVG(scalable_child->opts, &fit_to, &transform, &width, &height, &multiplier, r, s, t);
+        should_crop = setupSVG(scalable_child->opts, &transform, &width, &height, &multiplier, r, s, t);
     }
 
     if(svg_data) {
@@ -332,7 +331,7 @@ static int modify(lua_State* L) {
         resvg_size size;
 
         if(nodeID) {
-            resvg_path_bbox pbox;
+            resvg_rect pbox;
             resvg_get_node_bbox(scalable_child->tree, nodeID, &pbox);
 
             size.width = pbox.width;
@@ -363,10 +362,10 @@ static int modify(lua_State* L) {
     }
 
     if(nodeID) {
-        resvg_render_node(scalable_child->tree, nodeID, fit_to, transform, texture->width, texture->height, pixels);
+        resvg_render_node(scalable_child->tree, nodeID, transform, texture->width, texture->height, pixels);
     }
     else {
-        resvg_render(scalable_child->tree, fit_to, transform, texture->width, texture->height, pixels);
+        resvg_render(scalable_child->tree, transform, texture->width, texture->height, pixels);
     }
 
     texture->pixels = stbi__convert_format((unsigned char*)pixels, 4, bpp, texture->width, texture->height);
@@ -559,7 +558,7 @@ bool decodeWEBP(Texture* texture, const uint8_t* data, size_t length) {
 
 // ----------------------------------------------------------------------------
 
-bool setupSVG(resvg_options* opts, resvg_fit_to* fit_to, resvg_transform* transform, int* width, int* height, double* multiplier, std::vector<double> r, std::vector<double> s, std::vector<double> t) {
+bool setupSVG(resvg_options* opts, resvg_transform* transform, int* width, int* height, double* multiplier, std::vector<double> r, std::vector<double> s, std::vector<double> t) {
     bool should_crop = false;
 
     // Render
@@ -575,6 +574,10 @@ bool setupSVG(resvg_options* opts, resvg_fit_to* fit_to, resvg_transform* transf
     if(s.size() > 0) {
         should_crop = (bool)s[4];
 
+// fit_to was removed in resvg 0.33.0
+// TODO: Replicate fit_to behaviour using transforms instead. As it currently is, transform does not work with
+//       crop to bbox. This also needs fixing.
+/*
         switch((resvg_fit_to_type)s[2]) {
             case RESVG_FIT_TO_TYPE_WIDTH:
                 if(s[0] >= 1) {
@@ -607,6 +610,8 @@ bool setupSVG(resvg_options* opts, resvg_fit_to* fit_to, resvg_transform* transf
                 fit_to->value = 1;
                 break;
         }
+*/
+
     }
 
     // Transform
@@ -728,7 +733,6 @@ static int newScalableTexture(lua_State* L) {
     scalable_child->opts = resvg_options_create();
 
     resvg_transform transform = resvg_transform_identity();
-    resvg_fit_to fit_to = { RESVG_FIT_TO_TYPE_ORIGINAL, 1 };
 
     if(is_raw) {
         bytes = malloc(length * sizeof(const char));
@@ -784,7 +788,7 @@ static int newScalableTexture(lua_State* L) {
             resvg_options_load_font_data(scalable_child->opts, font_data, font_length);
         }
 
-        should_crop = setupSVG(scalable_child->opts, &fit_to, &transform, &width, &height, &multiplier, r, s, t);
+        should_crop = setupSVG(scalable_child->opts, &transform, &width, &height, &multiplier, r, s, t);
     }
 
 {
@@ -842,7 +846,7 @@ static int newScalableTexture(lua_State* L) {
         goto SVG_FAIL;
     }
 
-    resvg_render(scalable_child->tree, fit_to, transform, texture->width, texture->height, pixels);
+    resvg_render(scalable_child->tree, transform, texture->width, texture->height, pixels);
 
     int bpp = CoronaExternalFormatBPP(texture->format);
 
