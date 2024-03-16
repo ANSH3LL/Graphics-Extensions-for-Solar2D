@@ -571,47 +571,10 @@ bool setupSVG(resvg_options* opts, resvg_transform* transform, int* width, int* 
     }
 
     // Sizing
+    // Only the crop sizing key works as a result of "fit_to" being unavailable in resvg 0.33.0 and later
+    // Use transform scale to replicate fit_to behaviour
     if(s.size() > 0) {
         should_crop = (bool)s[4];
-
-// fit_to was removed in resvg 0.33.0
-// TODO: Replicate fit_to behaviour using transforms instead. As it currently is, transform does not work with
-//       crop to bbox. This also needs fixing.
-/*
-        switch((resvg_fit_to_type)s[2]) {
-            case RESVG_FIT_TO_TYPE_WIDTH:
-                if(s[0] >= 1) {
-                    fit_to->type = RESVG_FIT_TO_TYPE_WIDTH;
-                    fit_to->value = s[0];
-
-                    (*width) = (int)s[0];
-                    (*height) = (int)s[1];
-                }
-                break;
-            case RESVG_FIT_TO_TYPE_HEIGHT:
-                if(s[1] >= 1) {
-                    fit_to->type = RESVG_FIT_TO_TYPE_HEIGHT;
-                    fit_to->value = s[1];
-
-                    (*width) = (int)s[0];
-                    (*height) = (int)s[1];
-                }
-                break;
-            case RESVG_FIT_TO_TYPE_ZOOM:
-                if(s[3] > 0) {
-                    fit_to->type = RESVG_FIT_TO_TYPE_ZOOM;
-                    fit_to->value = s[3];
-
-                    (*multiplier) = s[3];
-                }
-                break;
-            default:
-                fit_to->type = RESVG_FIT_TO_TYPE_ORIGINAL;
-                fit_to->value = 1;
-                break;
-        }
-*/
-
     }
 
     // Transform
@@ -624,6 +587,10 @@ bool setupSVG(resvg_options* opts, resvg_transform* transform, int* width, int* 
 
         transform->e = t[4];
         transform->f = t[5];
+
+        if(t[0] > 1 || t[3] > 1) {
+            (*multiplier) = t[0] > t[3] ? t[0] : t[3];
+        }
     }
 
     return should_crop;
