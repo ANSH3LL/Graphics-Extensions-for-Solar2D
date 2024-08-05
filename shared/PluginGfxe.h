@@ -216,10 +216,7 @@ static int trait(lua_State* L, void* context);
 static int frames(lua_State* L, void* context);
 static int completed(lua_State* L, void* context);
 
-bool setupSVG(
-    resvg_options* opts, resvg_transform* transform, int* width, int* height, double* multiplier,
-    std::vector<double> r, std::vector<double> s, std::vector<double> t
-);
+bool setupSVG(resvg_options* opts, resvg_transform* transform, double* multiplier, std::vector<double> r, std::vector<double> s, std::vector<double> t);
 
 // ----------------------------------------------------------------------------
 

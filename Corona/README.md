@@ -116,17 +116,8 @@ local texture = gfxe.newScalableTexture(params, config)
 Use this to set parameters on how to calculate the output size of the vector image.
 
 ##### Properties
-- `width` *Optional* - the required output width
-- `height` *Optional* - the required output height
-- `aspect` *Optional* - how to resize the vector image
-- `zoom` *Optional* - the scale factor to apply when `aspect` is `gfxe.ZOOM_BY_RATIO`
+- `zoom` *Optional* - the scaling factor to apply to the rendered image. Must be larger than 0
 - `crop` *Optional* - how to crop the rendered image
-
-##### Aspect types
-- `gfxe.ORIGINAL_SIZE` - renders the vector image in its original size
-- `gfxe.PRESERVE_WIDTH` - ensures the rendered image fits the `width` given
-- `gfxe.PRESERVE_HEIGHT` - ensures the rendered image fits the `height` given
-- `gfxe.ZOOM_BY_RATIO` - scales the rendered image up or down depending on `zoom`, which must be larger than 0
 
 ##### Cropping types
 - `gfxe.NO_CROPPING` - no cropping of the rendered image
@@ -209,7 +200,7 @@ end
 
 
 ### StaticImage
-Use this to display static images. Supports **WEBP** (no animation), **QOI**, **JPEG** and **PNG**. This is actually an `ImageRect`.
+Use this to display static images. Supports **WEBP** (no animation), **QOI**, **JPEG** and **PNG**. This is an extended `ImageRect`.
 
 #### Parameters
 Same as in a `StaticTexture`
@@ -227,7 +218,7 @@ local image = gfxe.newStaticImage(
 
 
 ### ScalableImage
-Use this to display and modify vector images. Supports **SVG** and **SVGZ**. This is actually an `ImageRect`.
+Use this to display and modify vector images. Supports **SVG** and **SVGZ**. This is an extended `ImageRect`.
 
 #### Parameters
 Same as in `ScalableTexture`
@@ -251,18 +242,16 @@ local image = gfxe.newScalableImage(
 
 
 ### AnimatedImage
-Use this to play animated images. Supports animated **WEBP**. This is actually an `ImageRect`.
+Use this to play animated images. Supports animated **WEBP**. This is an extended `ImageRect`.
 
 #### Parameters
 Same as in an `AnimatedTexture` in addition to:
 - `listener` - a function that will be called when playback of a non-looped animation has been completed
-- `cleanup` - if set to `true`, will auto-remove the `ImageRect` when playback of a non-looped animation has been completed
 
 #### Methods
 - `play()` - playback the loaded animation
 - `pause()` - pause playback
 - `reset(loop)` - reset a paused or completed animation so it can be replayed from the first frame. If `loop` is set to `true`, the animation will play on loop once `play()` is called. Otherwise, looping will be disabled until `reset()` is called once more
-- `stop(dispose)` - stop playback. If `dispose` is set to `true`, the `ImageRect` will be removed. Once this method is called, it becomes impossible to reset or continue playing the animation
 
 #### Properties
 Same as in an `AnimatedTexture`. Does not expose the `completed` property

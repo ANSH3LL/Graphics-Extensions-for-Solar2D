@@ -12,12 +12,6 @@ local lib = Library:new(
 lib.NO_CROPPING = 0
 lib.CROP_TO_BBOX = 1
 
--- Aspect types
-lib.ORIGINAL_SIZE = 0
-lib.PRESERVE_WIDTH = 1
-lib.PRESERVE_HEIGHT = 2
-lib.ZOOM_BY_RATIO = 3
-
 -- Shape rendering methods
 lib.SHAPE_PREFER_SPEED = 0
 lib.SHAPE_CRISP_EDGES = 1
@@ -34,14 +28,12 @@ lib.IMAGE_PREFER_SPEED = 1
 
 function lib.newSizing()
     local sizing = {
-        width = 0, height = 0,
-        aspect = 0, zoom = 1, crop = 0
+        zoom = 0, crop = 0
     }
     --
     function sizing:raw()
         return {
-            self.width, self.height,
-            self.aspect, self.zoom, self.crop
+            self.zoom, self.crop
         }
     end
     --
@@ -155,8 +147,6 @@ function lib.newStaticImage(opts)
     return rect
 end
 
--- TODO: Get rid of opts.cleanup & rect:stop & rect._complete & rect._released
--- TODO: Rename rect._playing to rect.isPlaying & rect._loop to rect.isLooping
 function lib.newAnimatedImage(opts)
     local texture = lib.newAnimatedTexture(opts)
     if not texture then return end
@@ -168,12 +158,9 @@ function lib.newAnimatedImage(opts)
     rect.texture = texture
     --
     rect._time = 0
-    rect._playing = false
-    --
     rect._complete = false
-    rect._released = false
+    rect.isPlaying = false
     --
-    rect.cleanup = opts.cleanup
     rect.listener = opts.listener
     rect._loop = opts.loop or false
     --
@@ -188,12 +175,8 @@ function lib.newAnimatedImage(opts)
         rect.update(event)
         --
         if rect.texture.completed then
-            if rect.cleanup then
-                rect:stop(true)
-            else
-                rect._complete = true
-                rect:pause()
-            end
+            rect._complete = true
+            rect:pause()
             --
             if rect.listener then
                 rect.listener()
@@ -202,11 +185,10 @@ function lib.newAnimatedImage(opts)
     end
     --
     function rect:play()
-        if self._released then return end
         if self._complete then return end
-        if self._playing then return end
+        if self.isPlaying then return end
         --
-        self._playing = true
+        self.isPlaying = true
         self._time = system.getTimer()
         --
         if self._loop then
@@ -217,10 +199,8 @@ function lib.newAnimatedImage(opts)
     end
     --
     function rect:pause()
-        if not self._playing then return end
-        if self._released then return end
-        --
-        self._playing = false
+        if not self.isPlaying then return end
+        self.isPlaying = false
         --
         if self._loop then
             Runtime:removeEventListener('enterFrame', self.update)
@@ -229,40 +209,18 @@ function lib.newAnimatedImage(opts)
         end
     end
     --
-    function rect:stop(dispose)
-        if self._released then return end
-        --
-        self:pause()
-        --
-        self._released = true
-        self._complete = true
-        --
-        self.texture:releaseSelf()
-        --
-        if dispose then
-            timer.performWithDelay(1,
-                function()
-                    self.texture = nil
-                    self:removeSelf()
-                end
-            )
-        end
-    end
-    --
     function rect:reset(loop)
-        if self._released then return end
-        if self._playing then return end
-        --
+        if self.isPlaying then return end
         self._complete = false
-        self._time = 0
         --
+        self._time = 0
         self._loop = loop or false
+        --
         self.texture:reset(self._loop)
         self.texture:invalidate()
     end
     --
     function rect:finalize(event)
-        if self._released then return end
         self.texture:releaseSelf()
     end
     --

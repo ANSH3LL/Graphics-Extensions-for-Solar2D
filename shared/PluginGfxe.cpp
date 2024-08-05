@@ -213,7 +213,6 @@ static int modify(lua_State* L) {
     bool should_crop = false;
 
     size_t length = 0;
-    int width = 0, height = 0;
 
     const char* nodeID = NULL;
     const char* svg_data = NULL;
@@ -230,12 +229,10 @@ static int modify(lua_State* L) {
 
     if(lua_istable(L, 2)) {
         std::vector<double> r = asArray(L, 2, "render");
-
         std::vector<double> s = asArray(L, 2, "sizing");
         std::vector<double> t = asArray(L, 2, "transform");
 
         const char* res_path = asString(L, 2, "resourceDir");
-
         const char* languages = asString(L, 2, "languages");
         const char* font_family = asString(L, 2, "fontFamily");
 
@@ -267,7 +264,7 @@ static int modify(lua_State* L) {
             resvg_options_load_font_data(scalable_child->opts, font_data, font_length);
         }
 
-        should_crop = setupSVG(scalable_child->opts, &transform, &width, &height, &multiplier, r, s, t);
+        should_crop = setupSVG(scalable_child->opts, &transform, &multiplier, r, s, t);
     }
 
     if(svg_data) {
@@ -329,10 +326,11 @@ static int modify(lua_State* L) {
     }
     else {
         resvg_size size;
+        int width = 0, height = 0;
 
         if(nodeID) {
             resvg_rect pbox;
-            resvg_get_node_bbox(scalable_child->tree, nodeID, &pbox);
+            resvg_get_node_stroke_bbox(scalable_child->tree, nodeID, &pbox);
 
             size.width = pbox.width;
             size.height = pbox.height;
@@ -348,6 +346,11 @@ static int modify(lua_State* L) {
 
         texture->width = width >= 1 ? width : size.width;
         texture->height = height >= 1 ? height : size.height;
+    }
+
+    if(multiplier > 0) {
+        transform.a *= multiplier;
+        transform.d *= multiplier;
     }
 
 {
@@ -558,7 +561,7 @@ bool decodeWEBP(Texture* texture, const uint8_t* data, size_t length) {
 
 // ----------------------------------------------------------------------------
 
-bool setupSVG(resvg_options* opts, resvg_transform* transform, int* width, int* height, double* multiplier, std::vector<double> r, std::vector<double> s, std::vector<double> t) {
+bool setupSVG(resvg_options* opts, resvg_transform* transform, double* multiplier, std::vector<double> r, std::vector<double> s, std::vector<double> t) {
     bool should_crop = false;
 
     // Render
@@ -571,10 +574,9 @@ bool setupSVG(resvg_options* opts, resvg_transform* transform, int* width, int* 
     }
 
     // Sizing
-    // Only the crop sizing key works as a result of "fit_to" being unavailable in resvg 0.33.0 and later
-    // Use transform scale to replicate fit_to behaviour
     if(s.size() > 0) {
-        should_crop = (bool)s[4];
+        (*multiplier) = s[0];
+        should_crop = (bool)s[1];
     }
 
     // Transform
@@ -587,10 +589,6 @@ bool setupSVG(resvg_options* opts, resvg_transform* transform, int* width, int* 
 
         transform->e = t[4];
         transform->f = t[5];
-
-        if(t[0] > 1 || t[3] > 1) {
-            (*multiplier) = t[0] > t[3] ? t[0] : t[3];
-        }
     }
 
     return should_crop;
@@ -672,7 +670,6 @@ static int newScalableTexture(lua_State* L) {
     double multiplier = 0;
     bool should_crop = false;
 
-    int width = 0, height = 0;
     Texture* texture = new Texture;
 
     bool is_raw = lua_toboolean(L, 1);
@@ -755,7 +752,7 @@ static int newScalableTexture(lua_State* L) {
             resvg_options_load_font_data(scalable_child->opts, font_data, font_length);
         }
 
-        should_crop = setupSVG(scalable_child->opts, &transform, &width, &height, &multiplier, r, s, t);
+        should_crop = setupSVG(scalable_child->opts, &transform, &multiplier, r, s, t);
     }
 
 {
@@ -794,6 +791,7 @@ static int newScalableTexture(lua_State* L) {
         }
     }
     else {
+        int width = 0, height = 0;
         resvg_size size = resvg_get_image_size(scalable_child->tree);
 
         if(multiplier > 0) {
@@ -803,6 +801,11 @@ static int newScalableTexture(lua_State* L) {
 
         texture->width = width >= 1 ? width : size.width;
         texture->height = height >= 1 ? height : size.height;
+    }
+
+    if(multiplier > 0) {
+        transform.a *= multiplier;
+        transform.d *= multiplier;
     }
 
 {
