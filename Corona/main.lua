@@ -28,8 +28,9 @@ svg1.x, svg1.y = display.contentCenterX, display.contentCenterY
 -------------------------------------------------------------------
 
 local sizing = gfxe.newSizing()
-sizing.aspect = gfxe.ZOOM_BY_RATIO
+
 sizing.zoom = 2
+sizing.crop = gfxe.CROP_TO_BBOX
 
 local svg2 = gfxe.newScalableImage(
     {
